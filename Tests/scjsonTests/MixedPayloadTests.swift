@@ -36,4 +36,20 @@ final class MixedPayloadTests: XCTestCase {
             XCTAssertEqual(original["region_order"] as? NSArray, output?["region_order"] as? NSArray)
         }
     }
+
+    func testRootAndCompoundStateOrderSurviveSparseDecoding() throws {
+        let source = #"{"final":[{}],"state":[{"parallel":[{}],"final":[{}],"state_order":["parallel","final"]}],"state_order":["final","state"]}"#
+        let chart = try JSONDecoder().decode(ScxmlProps.self, from: Data(source.utf8))
+        XCTAssertEqual(chart.stateOrder, ["final", "state"])
+        XCTAssertEqual(chart.state.first?.stateOrder, ["parallel", "final"])
+        let roundTrip = try JSONDecoder().decode(ScxmlProps.self, from: JSONEncoder().encode(chart))
+        XCTAssertEqual(roundTrip.stateOrder, chart.stateOrder)
+        XCTAssertEqual(roundTrip.state.first?.stateOrder, chart.state.first?.stateOrder)
+
+        let empty = try JSONDecoder().decode(StateProps.self, from: Data(#"{"state_order":[]}"#.utf8))
+        XCTAssertEqual(empty.stateOrder, [])
+        let sparse = try JSONDecoder().decode(ScxmlProps.self, from: Data("{}".utf8))
+        let encoded = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(sparse)) as? NSDictionary)
+        XCTAssertNil(encoded["state_order"])
+    }
 }

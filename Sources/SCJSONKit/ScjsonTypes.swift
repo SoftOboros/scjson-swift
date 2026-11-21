@@ -1648,6 +1648,8 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
     public var otherAttributes: JSONDictionary
     /// Help Text
     public var helpText: [String]
+    /// State Order
+    public var stateOrder: [String]?
 
     /// Create a new ScxmlProps value with schema defaults applied.
     public init(
@@ -1664,7 +1666,8 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
         binding: BindingDatatypeProps? = nil,
         exmode: ExmodeDatatypeProps? = nil,
         otherAttributes: JSONDictionary = [:],
-        helpText: [String] = []
+        helpText: [String] = [],
+        stateOrder: [String]? = nil
     ) {
         self.state = state
         self.parallel = parallel
@@ -1680,6 +1683,7 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
         self.exmode = exmode
         self.otherAttributes = otherAttributes
         self.helpText = helpText
+        self.stateOrder = stateOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1697,6 +1701,7 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
         case exmode = "exmode"
         case otherAttributes = "other_attributes"
         case helpText = "help_text"
+        case stateOrder = "state_order"
     }
 
     public init(from decoder: Decoder) throws {
@@ -1715,6 +1720,7 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
         exmode = try fields.decodeIfPresent(ExmodeDatatypeProps.self, forKey: .exmode)
         otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
         helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        stateOrder = try fields.decodeIfPresent([String].self, forKey: .stateOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1873,6 +1879,8 @@ public struct StateProps: ScjsonCodable, Equatable {
     public var otherAttributes: JSONDictionary
     /// Help Text
     public var helpText: [String]
+    /// State Order
+    public var stateOrder: [String]?
 
     /// Create a new StateProps value with schema defaults applied.
     public init(
@@ -1890,7 +1898,8 @@ public struct StateProps: ScjsonCodable, Equatable {
         id: String? = nil,
         initialAttribute: [String] = [],
         otherAttributes: JSONDictionary = [:],
-        helpText: [String] = []
+        helpText: [String] = [],
+        stateOrder: [String]? = nil
     ) {
         self.onentry = onentry
         self.onexit = onexit
@@ -1907,6 +1916,7 @@ public struct StateProps: ScjsonCodable, Equatable {
         self.initialAttribute = initialAttribute
         self.otherAttributes = otherAttributes
         self.helpText = helpText
+        self.stateOrder = stateOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1925,6 +1935,7 @@ public struct StateProps: ScjsonCodable, Equatable {
         case initialAttribute = "initial_attribute"
         case otherAttributes = "other_attributes"
         case helpText = "help_text"
+        case stateOrder = "state_order"
     }
 
     public init(from decoder: Decoder) throws {
@@ -1944,6 +1955,7 @@ public struct StateProps: ScjsonCodable, Equatable {
         initialAttribute = try fields.decodeIfPresent([String].self, forKey: .initialAttribute) ?? []
         otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
         helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        stateOrder = try fields.decodeIfPresent([String].self, forKey: .stateOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
