@@ -25,4 +25,15 @@ final class MixedPayloadTests: XCTestCase {
             XCTAssertEqual(original["execution_order"] as? NSArray, output["execution_order"] as? NSArray)
         }
     }
+
+    func testParallelRegionOrderSurvivesSparseDecoding() throws {
+        for source in ["{}", #"{"region_order":[]}"#,
+                       #"{"state":[{}],"parallel":[{}],"region_order":["parallel","state"]}"#] {
+            let input = Data(source.utf8)
+            let value = try JSONDecoder().decode(ParallelProps.self, from: input)
+            let output = try JSONSerialization.jsonObject(with: JSONEncoder().encode(value)) as? NSDictionary
+            let original = try XCTUnwrap(JSONSerialization.jsonObject(with: input) as? NSDictionary)
+            XCTAssertEqual(original["region_order"] as? NSArray, output?["region_order"] as? NSArray)
+        }
+    }
 }

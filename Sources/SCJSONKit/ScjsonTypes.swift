@@ -1395,6 +1395,8 @@ public struct ParallelProps: ScjsonCodable, Equatable {
     public var otherAttributes: JSONDictionary
     /// Help Text
     public var helpText: [String]
+    /// Region Order
+    public var regionOrder: [String]?
 
     /// Create a new ParallelProps value with schema defaults applied.
     public init(
@@ -1409,7 +1411,8 @@ public struct ParallelProps: ScjsonCodable, Equatable {
         otherElement: [JSONValue] = [],
         id: String? = nil,
         otherAttributes: JSONDictionary = [:],
-        helpText: [String] = []
+        helpText: [String] = [],
+        regionOrder: [String]? = nil
     ) {
         self.onentry = onentry
         self.onexit = onexit
@@ -1423,6 +1426,7 @@ public struct ParallelProps: ScjsonCodable, Equatable {
         self.id = id
         self.otherAttributes = otherAttributes
         self.helpText = helpText
+        self.regionOrder = regionOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1438,6 +1442,7 @@ public struct ParallelProps: ScjsonCodable, Equatable {
         case id = "id"
         case otherAttributes = "other_attributes"
         case helpText = "help_text"
+        case regionOrder = "region_order"
     }
 
     public init(from decoder: Decoder) throws {
@@ -1454,6 +1459,7 @@ public struct ParallelProps: ScjsonCodable, Equatable {
         id = try fields.decodeIfPresent(String.self, forKey: .id)
         otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
         helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        regionOrder = try fields.decodeIfPresent([String].self, forKey: .regionOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
