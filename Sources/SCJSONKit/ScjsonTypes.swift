@@ -77,7 +77,7 @@ public extension ScjsonCodable {
 
 // MARK: - Enumerations
 
-/// The assign type that allows for precise manipulation of the datamodel     location.      Types are:     replacechildren (default),     firstchild, lastchild,     previoussibling, nextsibling,     replace, delete,     addattribute
+/// The assign type that allows for precise manipulation of the datamodel location.  Types are: replacechildren (default), firstchild, lastchild, previoussibling, nextsibling, replace, delete, addattribute
 public enum AssignTypeDatatypeProps: String, Codable, CaseIterable {
     case replacechildren = "replacechildren"
     case firstchild = "firstchild"
@@ -110,7 +110,7 @@ public enum BooleanDatatypeProps: String, Codable, CaseIterable {
     public static let defaultValue: BooleanDatatypeProps = .`true`
 }
 
-/// Describes the processor execution mode for this document, being either "lax" or     "strict".
+/// Describes the processor execution mode for this document, being either "lax" or "strict".
 public enum ExmodeDatatypeProps: String, Codable, CaseIterable {
     case lax = "lax"
     case strict = "strict"
@@ -151,6 +151,8 @@ public struct AssignProps: ScjsonCodable, Equatable {
     public var attr: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
     /// Content
     public var content: [JSONValue]
 
@@ -161,6 +163,7 @@ public struct AssignProps: ScjsonCodable, Equatable {
         typeValue: AssignTypeDatatypeProps = AssignTypeDatatypeProps.replacechildren,
         attr: String? = nil,
         otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
         content: [JSONValue] = []
     ) {
         self.location = location
@@ -168,6 +171,7 @@ public struct AssignProps: ScjsonCodable, Equatable {
         self.typeValue = typeValue
         self.attr = attr
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
         self.content = content
     }
 
@@ -177,7 +181,19 @@ public struct AssignProps: ScjsonCodable, Equatable {
         case typeValue = "type_value"
         case attr = "attr"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
         case content = "content"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        location = try fields.decode(String.self, forKey: .location)
+        expr = try fields.decodeIfPresent(String.self, forKey: .expr)
+        typeValue = try fields.decodeIfPresent(AssignTypeDatatypeProps.self, forKey: .typeValue) ?? AssignTypeDatatypeProps.replacechildren
+        attr = try fields.decodeIfPresent(String.self, forKey: .attr)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        content = try fields.decodeIfPresent([JSONValue].self, forKey: .content) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -199,18 +215,22 @@ public struct CancelProps: ScjsonCodable, Equatable {
     public var sendidexpr: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new CancelProps value with schema defaults applied.
     public init(
         otherElement: [JSONValue] = [],
         sendid: String? = nil,
         sendidexpr: String? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.otherElement = otherElement
         self.sendid = sendid
         self.sendidexpr = sendidexpr
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -218,6 +238,16 @@ public struct CancelProps: ScjsonCodable, Equatable {
         case sendid = "sendid"
         case sendidexpr = "sendidexpr"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        sendid = try fields.decodeIfPresent(String.self, forKey: .sendid)
+        sendidexpr = try fields.decodeIfPresent(String.self, forKey: .sendidexpr)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -231,27 +261,40 @@ public typealias CancelArray = [CancelProps]
 
 public struct ContentProps: ScjsonCodable, Equatable {
     /// Content
-    public var content: [ScxmlProps]?
+    public var content: [JSONValue]?
     /// Expr
     public var expr: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new ContentProps value with schema defaults applied.
     public init(
-        content: [ScxmlProps]? = nil,
+        content: [JSONValue]? = nil,
         expr: String? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.content = content
         self.expr = expr
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
         case content = "content"
         case expr = "expr"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        content = try fields.decodeIfPresent([JSONValue].self, forKey: .content)
+        expr = try fields.decodeIfPresent(String.self, forKey: .expr)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -273,6 +316,8 @@ public struct DataProps: ScjsonCodable, Equatable {
     public var expr: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
     /// Content
     public var content: [JSONValue]
 
@@ -282,12 +327,14 @@ public struct DataProps: ScjsonCodable, Equatable {
         src: String? = nil,
         expr: String? = nil,
         otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
         content: [JSONValue] = []
     ) {
         self.id = id
         self.src = src
         self.expr = expr
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
         self.content = content
     }
 
@@ -296,7 +343,18 @@ public struct DataProps: ScjsonCodable, Equatable {
         case src = "src"
         case expr = "expr"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
         case content = "content"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        id = try fields.decode(String.self, forKey: .id)
+        src = try fields.decodeIfPresent(String.self, forKey: .src)
+        expr = try fields.decodeIfPresent(String.self, forKey: .expr)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        content = try fields.decodeIfPresent([JSONValue].self, forKey: .content) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -316,22 +374,35 @@ public struct DatamodelProps: ScjsonCodable, Equatable {
     public var otherElement: [JSONValue]
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new DatamodelProps value with schema defaults applied.
     public init(
         data: [DataProps] = [],
         otherElement: [JSONValue] = [],
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.data = data
         self.otherElement = otherElement
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
         case data = "data"
         case otherElement = "other_element"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        data = try fields.decodeIfPresent([DataProps].self, forKey: .data) ?? []
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -349,22 +420,35 @@ public struct DonedataProps: ScjsonCodable, Equatable {
     public var param: [ParamProps]
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new DonedataProps value with schema defaults applied.
     public init(
         content: ContentProps? = nil,
         param: [ParamProps] = [],
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.content = content
         self.param = param
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
         case content = "content"
         case param = "param"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        content = try fields.decodeIfPresent(ContentProps.self, forKey: .content)
+        param = try fields.decodeIfPresent([ParamProps].self, forKey: .param) ?? []
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -380,16 +464,27 @@ public typealias DonedataArray = [DonedataProps]
 public struct ElseProps: ScjsonCodable, Equatable {
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new ElseProps value with schema defaults applied.
     public init(
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -404,19 +499,31 @@ public struct ElseifProps: ScjsonCodable, Equatable {
     public var cond: String
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new ElseifProps value with schema defaults applied.
     public init(
         cond: String = "",
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.cond = cond
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
         case cond = "cond"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        cond = try fields.decode(String.self, forKey: .cond)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -438,6 +545,8 @@ public struct FinalProps: ScjsonCodable, Equatable {
     public var id: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new FinalProps value with schema defaults applied.
     public init(
@@ -446,7 +555,8 @@ public struct FinalProps: ScjsonCodable, Equatable {
         donedata: [DonedataProps] = [],
         otherElement: [JSONValue] = [],
         id: String? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.onentry = onentry
         self.onexit = onexit
@@ -454,6 +564,7 @@ public struct FinalProps: ScjsonCodable, Equatable {
         self.otherElement = otherElement
         self.id = id
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -463,6 +574,18 @@ public struct FinalProps: ScjsonCodable, Equatable {
         case otherElement = "other_element"
         case id = "id"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        onentry = try fields.decodeIfPresent([OnentryProps].self, forKey: .onentry) ?? []
+        onexit = try fields.decodeIfPresent([OnexitProps].self, forKey: .onexit) ?? []
+        donedata = try fields.decodeIfPresent([DonedataProps].self, forKey: .donedata) ?? []
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        id = try fields.decodeIfPresent(String.self, forKey: .id)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -495,6 +618,10 @@ public struct FinalizeProps: ScjsonCodable, Equatable {
     public var cancel: [CancelProps]
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
+    /// Execution Order
+    public var executionOrder: [String]?
 
     /// Create a new FinalizeProps value with schema defaults applied.
     public init(
@@ -507,7 +634,9 @@ public struct FinalizeProps: ScjsonCodable, Equatable {
         assign: [AssignProps] = [],
         log: [LogProps] = [],
         cancel: [CancelProps] = [],
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
+        executionOrder: [String]? = nil
     ) {
         self.otherElement = otherElement
         self.raiseValue = raiseValue
@@ -519,6 +648,8 @@ public struct FinalizeProps: ScjsonCodable, Equatable {
         self.log = log
         self.cancel = cancel
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
+        self.executionOrder = executionOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -532,6 +663,24 @@ public struct FinalizeProps: ScjsonCodable, Equatable {
         case log = "log"
         case cancel = "cancel"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+        case executionOrder = "execution_order"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        raiseValue = try fields.decodeIfPresent([RaiseProps].self, forKey: .raiseValue) ?? []
+        ifValue = try fields.decodeIfPresent([IfProps].self, forKey: .ifValue) ?? []
+        foreach = try fields.decodeIfPresent([ForeachProps].self, forKey: .foreach) ?? []
+        send = try fields.decodeIfPresent([SendProps].self, forKey: .send) ?? []
+        script = try fields.decodeIfPresent([ScriptProps].self, forKey: .script) ?? []
+        assign = try fields.decodeIfPresent([AssignProps].self, forKey: .assign) ?? []
+        log = try fields.decodeIfPresent([LogProps].self, forKey: .log) ?? []
+        cancel = try fields.decodeIfPresent([CancelProps].self, forKey: .cancel) ?? []
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        executionOrder = try fields.decodeIfPresent([String].self, forKey: .executionOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -570,6 +719,10 @@ public struct ForeachProps: ScjsonCodable, Equatable {
     public var index: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
+    /// Execution Order
+    public var executionOrder: [String]?
 
     /// Create a new ForeachProps value with schema defaults applied.
     public init(
@@ -585,7 +738,9 @@ public struct ForeachProps: ScjsonCodable, Equatable {
         array: String = "",
         item: String = "",
         index: String? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
+        executionOrder: [String]? = nil
     ) {
         self.otherElement = otherElement
         self.raiseValue = raiseValue
@@ -600,6 +755,8 @@ public struct ForeachProps: ScjsonCodable, Equatable {
         self.item = item
         self.index = index
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
+        self.executionOrder = executionOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -616,6 +773,27 @@ public struct ForeachProps: ScjsonCodable, Equatable {
         case item = "item"
         case index = "index"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+        case executionOrder = "execution_order"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        raiseValue = try fields.decodeIfPresent([RaiseProps].self, forKey: .raiseValue) ?? []
+        ifValue = try fields.decodeIfPresent([IfProps].self, forKey: .ifValue) ?? []
+        foreach = try fields.decodeIfPresent([ForeachProps].self, forKey: .foreach) ?? []
+        send = try fields.decodeIfPresent([SendProps].self, forKey: .send) ?? []
+        script = try fields.decodeIfPresent([ScriptProps].self, forKey: .script) ?? []
+        assign = try fields.decodeIfPresent([AssignProps].self, forKey: .assign) ?? []
+        log = try fields.decodeIfPresent([LogProps].self, forKey: .log) ?? []
+        cancel = try fields.decodeIfPresent([CancelProps].self, forKey: .cancel) ?? []
+        array = try fields.decodeIfPresent(String.self, forKey: .array) ?? ""
+        item = try fields.decodeIfPresent(String.self, forKey: .item) ?? ""
+        index = try fields.decodeIfPresent(String.self, forKey: .index)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        executionOrder = try fields.decodeIfPresent([String].self, forKey: .executionOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -636,6 +814,8 @@ public struct HistoryProps: ScjsonCodable, Equatable {
     public var typeValue: HistoryTypeDatatypeProps?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new HistoryProps value with schema defaults applied.
     public init(
@@ -643,13 +823,15 @@ public struct HistoryProps: ScjsonCodable, Equatable {
         transition: TransitionProps = TransitionProps(),
         id: String? = nil,
         typeValue: HistoryTypeDatatypeProps? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.otherElement = otherElement
         self.transition = transition
         self.id = id
         self.typeValue = typeValue
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -658,6 +840,17 @@ public struct HistoryProps: ScjsonCodable, Equatable {
         case id = "id"
         case typeValue = "type_value"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        transition = try fields.decodeIfPresent(TransitionProps.self, forKey: .transition) ?? TransitionProps()
+        id = try fields.decodeIfPresent(String.self, forKey: .id)
+        typeValue = try fields.decodeIfPresent(HistoryTypeDatatypeProps.self, forKey: .typeValue)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -688,12 +881,17 @@ public struct IfProps: ScjsonCodable, Equatable {
     public var log: [LogProps]
     /// Cancel
     public var cancel: [CancelProps]
-    public var elseif: ElseifProps?
+    /// Elseif
+    public var elseif: JSONValue?
     public var elseValue: ElseProps?
     /// Cond
     public var cond: String
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
+    /// Execution Order
+    public var executionOrder: [String]?
 
     /// Create a new IfProps value with schema defaults applied.
     public init(
@@ -706,10 +904,12 @@ public struct IfProps: ScjsonCodable, Equatable {
         assign: [AssignProps] = [],
         log: [LogProps] = [],
         cancel: [CancelProps] = [],
-        elseif: ElseifProps? = nil,
+        elseif: JSONValue? = nil,
         elseValue: ElseProps? = nil,
         cond: String = "",
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
+        executionOrder: [String]? = nil
     ) {
         self.otherElement = otherElement
         self.raiseValue = raiseValue
@@ -724,6 +924,8 @@ public struct IfProps: ScjsonCodable, Equatable {
         self.elseValue = elseValue
         self.cond = cond
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
+        self.executionOrder = executionOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -740,6 +942,27 @@ public struct IfProps: ScjsonCodable, Equatable {
         case elseValue = "else_value"
         case cond = "cond"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+        case executionOrder = "execution_order"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        raiseValue = try fields.decodeIfPresent([RaiseProps].self, forKey: .raiseValue) ?? []
+        ifValue = try fields.decodeIfPresent([IfProps].self, forKey: .ifValue) ?? []
+        foreach = try fields.decodeIfPresent([ForeachProps].self, forKey: .foreach) ?? []
+        send = try fields.decodeIfPresent([SendProps].self, forKey: .send) ?? []
+        script = try fields.decodeIfPresent([ScriptProps].self, forKey: .script) ?? []
+        assign = try fields.decodeIfPresent([AssignProps].self, forKey: .assign) ?? []
+        log = try fields.decodeIfPresent([LogProps].self, forKey: .log) ?? []
+        cancel = try fields.decodeIfPresent([CancelProps].self, forKey: .cancel) ?? []
+        elseif = try fields.decodeIfPresent(JSONValue.self, forKey: .elseif)
+        elseValue = try fields.decodeIfPresent(ElseProps.self, forKey: .elseValue)
+        cond = try fields.decodeIfPresent(String.self, forKey: .cond) ?? ""
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        executionOrder = try fields.decodeIfPresent([String].self, forKey: .executionOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -757,22 +980,35 @@ public struct InitialProps: ScjsonCodable, Equatable {
     public var transition: TransitionProps
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new InitialProps value with schema defaults applied.
     public init(
         otherElement: [JSONValue] = [],
         transition: TransitionProps = TransitionProps(),
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.otherElement = otherElement
         self.transition = transition
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
         case otherElement = "other_element"
         case transition = "transition"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        transition = try fields.decodeIfPresent(TransitionProps.self, forKey: .transition) ?? TransitionProps()
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -810,6 +1046,8 @@ public struct InvokeProps: ScjsonCodable, Equatable {
     public var autoforward: BooleanDatatypeProps
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new InvokeProps value with schema defaults applied.
     public init(
@@ -825,7 +1063,8 @@ public struct InvokeProps: ScjsonCodable, Equatable {
         idlocation: String? = nil,
         namelist: String? = nil,
         autoforward: BooleanDatatypeProps = BooleanDatatypeProps.`false`,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.content = content
         self.param = param
@@ -840,6 +1079,7 @@ public struct InvokeProps: ScjsonCodable, Equatable {
         self.namelist = namelist
         self.autoforward = autoforward
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -856,6 +1096,25 @@ public struct InvokeProps: ScjsonCodable, Equatable {
         case namelist = "namelist"
         case autoforward = "autoforward"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        content = try fields.decodeIfPresent([ContentProps].self, forKey: .content) ?? []
+        param = try fields.decodeIfPresent([ParamProps].self, forKey: .param) ?? []
+        finalize = try fields.decodeIfPresent([FinalizeProps].self, forKey: .finalize) ?? []
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        typeValue = try fields.decodeIfPresent(String.self, forKey: .typeValue) ?? "scxml"
+        typeexpr = try fields.decodeIfPresent(String.self, forKey: .typeexpr)
+        src = try fields.decodeIfPresent(String.self, forKey: .src)
+        srcexpr = try fields.decodeIfPresent(String.self, forKey: .srcexpr)
+        id = try fields.decodeIfPresent(String.self, forKey: .id)
+        idlocation = try fields.decodeIfPresent(String.self, forKey: .idlocation)
+        namelist = try fields.decodeIfPresent(String.self, forKey: .namelist)
+        autoforward = try fields.decodeIfPresent(BooleanDatatypeProps.self, forKey: .autoforward) ?? BooleanDatatypeProps.`false`
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -877,18 +1136,22 @@ public struct LogProps: ScjsonCodable, Equatable {
     public var expr: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new LogProps value with schema defaults applied.
     public init(
         otherElement: [JSONValue] = [],
         label: String? = nil,
         expr: String? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.otherElement = otherElement
         self.label = label
         self.expr = expr
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -896,6 +1159,16 @@ public struct LogProps: ScjsonCodable, Equatable {
         case label = "label"
         case expr = "expr"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        label = try fields.decodeIfPresent(String.self, forKey: .label)
+        expr = try fields.decodeIfPresent(String.self, forKey: .expr)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -928,6 +1201,10 @@ public struct OnentryProps: ScjsonCodable, Equatable {
     public var cancel: [CancelProps]
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
+    /// Execution Order
+    public var executionOrder: [String]?
 
     /// Create a new OnentryProps value with schema defaults applied.
     public init(
@@ -940,7 +1217,9 @@ public struct OnentryProps: ScjsonCodable, Equatable {
         assign: [AssignProps] = [],
         log: [LogProps] = [],
         cancel: [CancelProps] = [],
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
+        executionOrder: [String]? = nil
     ) {
         self.otherElement = otherElement
         self.raiseValue = raiseValue
@@ -952,6 +1231,8 @@ public struct OnentryProps: ScjsonCodable, Equatable {
         self.log = log
         self.cancel = cancel
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
+        self.executionOrder = executionOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -965,6 +1246,24 @@ public struct OnentryProps: ScjsonCodable, Equatable {
         case log = "log"
         case cancel = "cancel"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+        case executionOrder = "execution_order"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        raiseValue = try fields.decodeIfPresent([RaiseProps].self, forKey: .raiseValue) ?? []
+        ifValue = try fields.decodeIfPresent([IfProps].self, forKey: .ifValue) ?? []
+        foreach = try fields.decodeIfPresent([ForeachProps].self, forKey: .foreach) ?? []
+        send = try fields.decodeIfPresent([SendProps].self, forKey: .send) ?? []
+        script = try fields.decodeIfPresent([ScriptProps].self, forKey: .script) ?? []
+        assign = try fields.decodeIfPresent([AssignProps].self, forKey: .assign) ?? []
+        log = try fields.decodeIfPresent([LogProps].self, forKey: .log) ?? []
+        cancel = try fields.decodeIfPresent([CancelProps].self, forKey: .cancel) ?? []
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        executionOrder = try fields.decodeIfPresent([String].self, forKey: .executionOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -997,6 +1296,10 @@ public struct OnexitProps: ScjsonCodable, Equatable {
     public var cancel: [CancelProps]
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
+    /// Execution Order
+    public var executionOrder: [String]?
 
     /// Create a new OnexitProps value with schema defaults applied.
     public init(
@@ -1009,7 +1312,9 @@ public struct OnexitProps: ScjsonCodable, Equatable {
         assign: [AssignProps] = [],
         log: [LogProps] = [],
         cancel: [CancelProps] = [],
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
+        executionOrder: [String]? = nil
     ) {
         self.otherElement = otherElement
         self.raiseValue = raiseValue
@@ -1021,6 +1326,8 @@ public struct OnexitProps: ScjsonCodable, Equatable {
         self.log = log
         self.cancel = cancel
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
+        self.executionOrder = executionOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1034,6 +1341,24 @@ public struct OnexitProps: ScjsonCodable, Equatable {
         case log = "log"
         case cancel = "cancel"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+        case executionOrder = "execution_order"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        raiseValue = try fields.decodeIfPresent([RaiseProps].self, forKey: .raiseValue) ?? []
+        ifValue = try fields.decodeIfPresent([IfProps].self, forKey: .ifValue) ?? []
+        foreach = try fields.decodeIfPresent([ForeachProps].self, forKey: .foreach) ?? []
+        send = try fields.decodeIfPresent([SendProps].self, forKey: .send) ?? []
+        script = try fields.decodeIfPresent([ScriptProps].self, forKey: .script) ?? []
+        assign = try fields.decodeIfPresent([AssignProps].self, forKey: .assign) ?? []
+        log = try fields.decodeIfPresent([LogProps].self, forKey: .log) ?? []
+        cancel = try fields.decodeIfPresent([CancelProps].self, forKey: .cancel) ?? []
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        executionOrder = try fields.decodeIfPresent([String].self, forKey: .executionOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1068,6 +1393,8 @@ public struct ParallelProps: ScjsonCodable, Equatable {
     public var id: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new ParallelProps value with schema defaults applied.
     public init(
@@ -1081,7 +1408,8 @@ public struct ParallelProps: ScjsonCodable, Equatable {
         invoke: [InvokeProps] = [],
         otherElement: [JSONValue] = [],
         id: String? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.onentry = onentry
         self.onexit = onexit
@@ -1094,6 +1422,7 @@ public struct ParallelProps: ScjsonCodable, Equatable {
         self.otherElement = otherElement
         self.id = id
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1108,6 +1437,23 @@ public struct ParallelProps: ScjsonCodable, Equatable {
         case otherElement = "other_element"
         case id = "id"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        onentry = try fields.decodeIfPresent([OnentryProps].self, forKey: .onentry) ?? []
+        onexit = try fields.decodeIfPresent([OnexitProps].self, forKey: .onexit) ?? []
+        transition = try fields.decodeIfPresent([TransitionProps].self, forKey: .transition) ?? []
+        state = try fields.decodeIfPresent([StateProps].self, forKey: .state) ?? []
+        parallel = try fields.decodeIfPresent([ParallelProps].self, forKey: .parallel) ?? []
+        history = try fields.decodeIfPresent([HistoryProps].self, forKey: .history) ?? []
+        datamodel = try fields.decodeIfPresent([DatamodelProps].self, forKey: .datamodel) ?? []
+        invoke = try fields.decodeIfPresent([InvokeProps].self, forKey: .invoke) ?? []
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        id = try fields.decodeIfPresent(String.self, forKey: .id)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1131,6 +1477,8 @@ public struct ParamProps: ScjsonCodable, Equatable {
     public var location: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new ParamProps value with schema defaults applied.
     public init(
@@ -1138,13 +1486,15 @@ public struct ParamProps: ScjsonCodable, Equatable {
         name: String = "",
         expr: String? = nil,
         location: String? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.otherElement = otherElement
         self.name = name
         self.expr = expr
         self.location = location
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1153,6 +1503,17 @@ public struct ParamProps: ScjsonCodable, Equatable {
         case expr = "expr"
         case location = "location"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        name = try fields.decode(String.self, forKey: .name)
+        expr = try fields.decodeIfPresent(String.self, forKey: .expr)
+        location = try fields.decodeIfPresent(String.self, forKey: .location)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1170,19 +1531,31 @@ public struct RaiseProps: ScjsonCodable, Equatable {
     public var event: String
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new RaiseProps value with schema defaults applied.
     public init(
         event: String = "",
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.event = event
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
         case event = "event"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        event = try fields.decode(String.self, forKey: .event)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1200,6 +1573,8 @@ public struct ScriptProps: ScjsonCodable, Equatable {
     public var src: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
     /// Content
     public var content: [JSONValue]
 
@@ -1207,17 +1582,28 @@ public struct ScriptProps: ScjsonCodable, Equatable {
     public init(
         src: String? = nil,
         otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
         content: [JSONValue] = []
     ) {
         self.src = src
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
         self.content = content
     }
 
     private enum CodingKeys: String, CodingKey {
         case src = "src"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
         case content = "content"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        src = try fields.decodeIfPresent(String.self, forKey: .src)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        content = try fields.decodeIfPresent([JSONValue].self, forKey: .content) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1254,6 +1640,8 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
     public var exmode: ExmodeDatatypeProps?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new ScxmlProps value with schema defaults applied.
     public init(
@@ -1269,7 +1657,8 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
         datamodelAttribute: String = "null",
         binding: BindingDatatypeProps? = nil,
         exmode: ExmodeDatatypeProps? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.state = state
         self.parallel = parallel
@@ -1284,6 +1673,7 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
         self.binding = binding
         self.exmode = exmode
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1300,6 +1690,25 @@ public struct ScxmlProps: ScjsonCodable, Equatable {
         case binding = "binding"
         case exmode = "exmode"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        state = try fields.decodeIfPresent([StateProps].self, forKey: .state) ?? []
+        parallel = try fields.decodeIfPresent([ParallelProps].self, forKey: .parallel) ?? []
+        final = try fields.decodeIfPresent([FinalProps].self, forKey: .final) ?? []
+        datamodel = try fields.decodeIfPresent([DatamodelProps].self, forKey: .datamodel) ?? []
+        script = try fields.decodeIfPresent([ScriptProps].self, forKey: .script) ?? []
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        initial = try fields.decodeIfPresent([String].self, forKey: .initial) ?? []
+        name = try fields.decodeIfPresent(String.self, forKey: .name)
+        version = try fields.decodeIfPresent(JSONValue.self, forKey: .version) ?? JSONValue.string("1.0")
+        datamodelAttribute = try fields.decodeIfPresent(String.self, forKey: .datamodelAttribute) ?? "null"
+        binding = try fields.decodeIfPresent(BindingDatatypeProps.self, forKey: .binding)
+        exmode = try fields.decodeIfPresent(ExmodeDatatypeProps.self, forKey: .exmode)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1339,6 +1748,8 @@ public struct SendProps: ScjsonCodable, Equatable {
     public var namelist: String?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new SendProps value with schema defaults applied.
     public init(
@@ -1356,7 +1767,8 @@ public struct SendProps: ScjsonCodable, Equatable {
         delay: String = "0s",
         delayexpr: String? = nil,
         namelist: String? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.content = content
         self.param = param
@@ -1373,6 +1785,7 @@ public struct SendProps: ScjsonCodable, Equatable {
         self.delayexpr = delayexpr
         self.namelist = namelist
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1391,6 +1804,27 @@ public struct SendProps: ScjsonCodable, Equatable {
         case delayexpr = "delayexpr"
         case namelist = "namelist"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        content = try fields.decodeIfPresent([ContentProps].self, forKey: .content) ?? []
+        param = try fields.decodeIfPresent([ParamProps].self, forKey: .param) ?? []
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        event = try fields.decodeIfPresent(String.self, forKey: .event)
+        eventexpr = try fields.decodeIfPresent(String.self, forKey: .eventexpr)
+        target = try fields.decodeIfPresent(String.self, forKey: .target)
+        targetexpr = try fields.decodeIfPresent(String.self, forKey: .targetexpr)
+        typeValue = try fields.decodeIfPresent(String.self, forKey: .typeValue) ?? "scxml"
+        typeexpr = try fields.decodeIfPresent(String.self, forKey: .typeexpr)
+        id = try fields.decodeIfPresent(String.self, forKey: .id)
+        idlocation = try fields.decodeIfPresent(String.self, forKey: .idlocation)
+        delay = try fields.decodeIfPresent(String.self, forKey: .delay) ?? "0s"
+        delayexpr = try fields.decodeIfPresent(String.self, forKey: .delayexpr)
+        namelist = try fields.decodeIfPresent(String.self, forKey: .namelist)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1431,6 +1865,8 @@ public struct StateProps: ScjsonCodable, Equatable {
     public var initialAttribute: [String]
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
 
     /// Create a new StateProps value with schema defaults applied.
     public init(
@@ -1447,7 +1883,8 @@ public struct StateProps: ScjsonCodable, Equatable {
         otherElement: [JSONValue] = [],
         id: String? = nil,
         initialAttribute: [String] = [],
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = []
     ) {
         self.onentry = onentry
         self.onexit = onexit
@@ -1463,6 +1900,7 @@ public struct StateProps: ScjsonCodable, Equatable {
         self.id = id
         self.initialAttribute = initialAttribute
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1480,6 +1918,26 @@ public struct StateProps: ScjsonCodable, Equatable {
         case id = "id"
         case initialAttribute = "initial_attribute"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        onentry = try fields.decodeIfPresent([OnentryProps].self, forKey: .onentry) ?? []
+        onexit = try fields.decodeIfPresent([OnexitProps].self, forKey: .onexit) ?? []
+        transition = try fields.decodeIfPresent([TransitionProps].self, forKey: .transition) ?? []
+        initial = try fields.decodeIfPresent([InitialProps].self, forKey: .initial) ?? []
+        state = try fields.decodeIfPresent([StateProps].self, forKey: .state) ?? []
+        parallel = try fields.decodeIfPresent([ParallelProps].self, forKey: .parallel) ?? []
+        final = try fields.decodeIfPresent([FinalProps].self, forKey: .final) ?? []
+        history = try fields.decodeIfPresent([HistoryProps].self, forKey: .history) ?? []
+        datamodel = try fields.decodeIfPresent([DatamodelProps].self, forKey: .datamodel) ?? []
+        invoke = try fields.decodeIfPresent([InvokeProps].self, forKey: .invoke) ?? []
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        id = try fields.decodeIfPresent(String.self, forKey: .id)
+        initialAttribute = try fields.decodeIfPresent([String].self, forKey: .initialAttribute) ?? []
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1519,6 +1977,10 @@ public struct TransitionProps: ScjsonCodable, Equatable {
     public var typeValue: TransitionTypeDatatypeProps?
     /// Other Attributes
     public var otherAttributes: JSONDictionary
+    /// Help Text
+    public var helpText: [String]
+    /// Execution Order
+    public var executionOrder: [String]?
 
     /// Create a new TransitionProps value with schema defaults applied.
     public init(
@@ -1535,7 +1997,9 @@ public struct TransitionProps: ScjsonCodable, Equatable {
         cond: String? = nil,
         target: [String] = [],
         typeValue: TransitionTypeDatatypeProps? = nil,
-        otherAttributes: JSONDictionary = [:]
+        otherAttributes: JSONDictionary = [:],
+        helpText: [String] = [],
+        executionOrder: [String]? = nil
     ) {
         self.otherElement = otherElement
         self.raiseValue = raiseValue
@@ -1551,6 +2015,8 @@ public struct TransitionProps: ScjsonCodable, Equatable {
         self.target = target
         self.typeValue = typeValue
         self.otherAttributes = otherAttributes
+        self.helpText = helpText
+        self.executionOrder = executionOrder
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1568,6 +2034,28 @@ public struct TransitionProps: ScjsonCodable, Equatable {
         case target = "target"
         case typeValue = "type_value"
         case otherAttributes = "other_attributes"
+        case helpText = "help_text"
+        case executionOrder = "execution_order"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        otherElement = try fields.decodeIfPresent([JSONValue].self, forKey: .otherElement) ?? []
+        raiseValue = try fields.decodeIfPresent([RaiseProps].self, forKey: .raiseValue) ?? []
+        ifValue = try fields.decodeIfPresent([IfProps].self, forKey: .ifValue) ?? []
+        foreach = try fields.decodeIfPresent([ForeachProps].self, forKey: .foreach) ?? []
+        send = try fields.decodeIfPresent([SendProps].self, forKey: .send) ?? []
+        script = try fields.decodeIfPresent([ScriptProps].self, forKey: .script) ?? []
+        assign = try fields.decodeIfPresent([AssignProps].self, forKey: .assign) ?? []
+        log = try fields.decodeIfPresent([LogProps].self, forKey: .log) ?? []
+        cancel = try fields.decodeIfPresent([CancelProps].self, forKey: .cancel) ?? []
+        event = try fields.decodeIfPresent(String.self, forKey: .event)
+        cond = try fields.decodeIfPresent(String.self, forKey: .cond)
+        target = try fields.decodeIfPresent([String].self, forKey: .target) ?? []
+        typeValue = try fields.decodeIfPresent(TransitionTypeDatatypeProps.self, forKey: .typeValue)
+        otherAttributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .otherAttributes) ?? [:]
+        helpText = try fields.decodeIfPresent([String].self, forKey: .helpText) ?? []
+        executionOrder = try fields.decodeIfPresent([String].self, forKey: .executionOrder)
     }
 
     /// Convenience factory returning the canonical default instance.
@@ -1578,6 +2066,59 @@ public struct TransitionProps: ScjsonCodable, Equatable {
 
 /// Convenience alias representing a collection of TransitionProps values.
 public typealias TransitionArray = [TransitionProps]
+
+public struct XmlPayloadElementProps: ScjsonCodable, Equatable {
+    /// Qname
+    public var qname: String
+    /// Text
+    public var text: String?
+    /// Tail
+    public var tail: String?
+    /// Children
+    public var children: [XmlPayloadElementProps]
+    /// Attributes
+    public var attributes: JSONDictionary
+
+    /// Create a new XmlPayloadElementProps value with schema defaults applied.
+    public init(
+        qname: String = "",
+        text: String? = nil,
+        tail: String? = nil,
+        children: [XmlPayloadElementProps] = [],
+        attributes: JSONDictionary = [:]
+    ) {
+        self.qname = qname
+        self.text = text
+        self.tail = tail
+        self.children = children
+        self.attributes = attributes
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case qname = "qname"
+        case text = "text"
+        case tail = "tail"
+        case children = "children"
+        case attributes = "attributes"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let fields = try decoder.container(keyedBy: CodingKeys.self)
+        qname = try fields.decodeIfPresent(String.self, forKey: .qname) ?? ""
+        text = try fields.decodeIfPresent(String.self, forKey: .text)
+        tail = try fields.decodeIfPresent(String.self, forKey: .tail)
+        children = try fields.decodeIfPresent([XmlPayloadElementProps].self, forKey: .children) ?? []
+        attributes = try fields.decodeIfPresent(JSONDictionary.self, forKey: .attributes) ?? [:]
+    }
+
+    /// Convenience factory returning the canonical default instance.
+    public static func makeDefault() -> XmlPayloadElementProps {
+        XmlPayloadElementProps()
+    }
+}
+
+/// Convenience alias representing a collection of XmlPayloadElementProps values.
+public typealias XmlPayloadElementArray = [XmlPayloadElementProps]
 
 
 // MARK: - Kind Registry
@@ -1694,5 +2235,9 @@ public enum ScjsonKind: String {
     case transitionArray = "transitionarray"
     /// Canonical kind identifier for the `transitiontypedatatype` element family.
     case transitionTypeDatatype = "transitiontypedatatype"
+    /// Canonical kind identifier for the `xmlpayloadelement` element family.
+    case xmlPayloadElement = "xmlpayloadelement"
+    /// Canonical kind identifier for arrays of `xmlpayloadelement` entries.
+    case xmlPayloadElementArray = "xmlpayloadelementarray"
 }
 

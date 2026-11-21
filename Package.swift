@@ -24,7 +24,7 @@ let package = Package(
         ),
         .testTarget(
             name: "scjsonTests",
-            dependencies: ["scjson"]
+            dependencies: ["scjson", "SCJSONKit"]
         )
     ]
 )
