@@ -210,21 +210,20 @@ extension SCJSON {
 
 // MARK: - XML tree builder
 
-private let STRUCTURAL_FIELDS_ARR: [String] = [
-    "state", "parallel", "final", "history", "transition", "onentry", "onexit",
-    "invoke", "datamodel", "data", "initial", "script", "log", "assign", "send",
-    "cancel", "param", "raise", "foreach"
-]
-@inline(__always)
-private func isStructural(_ tag: String) -> Bool { STRUCTURAL_FIELDS_ARR.contains(tag) }
+private enum ScxmlElements {
+    static let structuralFields = [
+        "state", "parallel", "final", "history", "transition", "onentry", "onexit",
+        "invoke", "datamodel", "data", "initial", "script", "log", "assign", "send",
+        "cancel", "param", "raise", "foreach"
+    ]
 
-private let SCXML_KNOWN_TAGS: Set<String> = [
-    "scxml", "state", "parallel", "final", "history", "transition", "onentry",
-    "onexit", "invoke", "datamodel", "data", "initial", "script", "log", "assign",
-    "send", "cancel", "param", "raise", "foreach", "if", "elseif", "else",
-    "donedata", "finalize", "content"
-]
-
+    static let knownTags: Set<String> = [
+        "scxml", "state", "parallel", "final", "history", "transition", "onentry",
+        "onexit", "invoke", "datamodel", "data", "initial", "script", "log", "assign",
+        "send", "cancel", "param", "raise", "foreach", "if", "elseif", "else",
+        "donedata", "finalize", "content"
+    ]
+}
 
 private class XMLTreeBuilder: NSObject, XMLParserDelegate {
     class Node {
@@ -277,7 +276,7 @@ private func convertAnyElement(_ node: XMLTreeBuilder.Node) -> [String: Any] {
 
 private func convertElement(_ node: XMLTreeBuilder.Node) throws -> [String: Any] {
     let tag = localTag(node.tag)
-    if !SCXML_KNOWN_TAGS.contains(tag) {
+    if !ScxmlElements.knownTags.contains(tag) {
         return convertAnyElement(node)
     }
     var obj: [String: Any] = [:]
@@ -357,7 +356,7 @@ private func convertElement(_ node: XMLTreeBuilder.Node) throws -> [String: Any]
                 if converted.keys.count <= 1 { obj["else_value"] = NSNull() } else { obj["else_value"] = converted }
                 continue
             }
-            if isStructural(childTag) {
+            if ScxmlElements.structuralFields.contains(childTag) {
                 var arr = lifted[childTag] ?? []; arr.append(converted); lifted[childTag] = arr; continue
             }
         }
@@ -436,7 +435,7 @@ private func xmlFromJSONObject(_ obj: [String: Any], element tag: String) throws
     // Attributes
     for (kAny, vAny) in obj {
         let k = kAny
-        if k == "tag" || k == "content" || (isStructural(k) && !(tag == "scxml" && k == "initial")) { continue }
+        if k == "tag" || k == "content" || (ScxmlElements.structuralFields.contains(k) && !(tag == "scxml" && k == "initial")) { continue }
         let outKey: String
         switch k {
         case "datamodel_attribute": outKey = "datamodel"
@@ -473,7 +472,7 @@ private func xmlFromJSONObject(_ obj: [String: Any], element tag: String) throws
             }
         }
     }
-    for childTag in STRUCTURAL_FIELDS_ARR {
+    for childTag in ScxmlElements.structuralFields {
         let key = childTag == "raise" ? "raise_value" : childTag
         try appendChildren(obj[key], element: childTag)
     }
