@@ -11,6 +11,17 @@ import class Foundation.FileManager
 @testable import scjson
 
 final class scjsonTests: XCTestCase {
+    func testCanonicalActionKeysAndUntaggedStructuralChildren() throws {
+        let doc = #"{"state":[{"id":"s","onentry":[{"raise_value":[{"event":"go"}]}]}]}"#
+        let xml = try SCJSON.jsonToXml(doc)
+        XCTAssertTrue(xml.contains(#"<state id="s"><onentry><raise event="go"/>"#))
+        let encoded = try SCJSON.xmlToJson(xml)
+        XCTAssertTrue(encoded.contains(#""raise_value""#))
+        for alias in ["raise", "raiseValue"] {
+            XCTAssertThrowsError(try SCJSON.jsonToXml(doc.replacingOccurrences(of: "raise_value", with: alias)))
+        }
+    }
+
     func createScxml() -> String {
         return "<scxml xmlns=\"http://www.w3.org/2005/07/scxml\"/>"
     }

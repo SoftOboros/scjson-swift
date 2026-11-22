@@ -182,7 +182,7 @@ extension SCJSON {
         var root = obj
         if root["tag"] as? String == nil { root["tag"] = "scxml" }
         if root["xmlns"] == nil { root["xmlns"] = "http://www.w3.org/2005/07/scxml" }
-        return xmlFromJSONObject(root)
+        return try xmlFromJSONObject(root, element: "scxml")
     }
 
     private static func convertScxmlFile(src: URL, dest: URL?, keepEmpty: Bool, verify: Bool) throws {
@@ -349,8 +349,9 @@ private func convertElement(_ node: XMLTreeBuilder.Node) throws -> [String: Any]
                 var arr = (obj["content"] as? [Any]) ?? []
                 arr.append(minimal); obj["content"] = arr; continue
             }
-            if childTag == "if" {
-                var arr = lifted["if_value"] ?? []; arr.append(converted); lifted["if_value"] = arr; continue
+            if childTag == "if" || childTag == "raise" {
+                lifted[childTag + "_value", default: []].append(converted)
+                continue
             }
             if childTag == "else" {
                 if converted.keys.count <= 1 { obj["else_value"] = NSNull() } else { obj["else_value"] = converted }
@@ -412,13 +413,30 @@ private func convertElement(_ node: XMLTreeBuilder.Node) throws -> [String: Any]
     return obj
 }
 
-private func xmlFromJSONObject(_ obj: [String: Any]) -> String {
-    let tag = (obj["tag"] as? String) ?? "scxml"
+private func xmlFromJSONObject(_ obj: [String: Any], element tag: String) throws -> String {
+    if ["onentry", "onexit", "finalize", "foreach", "transition", "if"].contains(tag) {
+        for child in ["raise", "if", "else"] {
+            let canonical = child + "_value"
+            let present = [child, child + "Value", canonical].filter { obj.keys.contains($0) }
+            guard !present.isEmpty else { continue }
+            let diagnostic: String
+            if present.count > 1 {
+                diagnostic = "Conflicting spellings: " + present.joined(separator: ", ")
+            } else if child == "else", tag != "if" {
+                diagnostic = "else is only valid inside an if_value block"
+            } else if present[0] != canonical {
+                diagnostic = "Use " + canonical + " for " + present[0]
+            } else {
+                continue
+            }
+            throw NSError(domain: "scjson", code: 5, userInfo: [NSLocalizedDescriptionKey: diagnostic])
+        }
+    }
     var attrs: [(String, String)] = []
     // Attributes
     for (kAny, vAny) in obj {
         let k = kAny
-        if k == "tag" || k == "content" || isStructural(k) { continue }
+        if k == "tag" || k == "content" || (isStructural(k) && !(tag == "scxml" && k == "initial")) { continue }
         let outKey: String
         switch k {
         case "datamodel_attribute": outKey = "datamodel"
@@ -440,108 +458,41 @@ private func xmlFromJSONObject(_ obj: [String: Any]) -> String {
         }
     }
     var children: [String] = []
-    // Structural arrays
-    for key in STRUCTURAL_FIELDS_ARR {
-        if let arr = obj[key] as? [Any] {
-            for item in arr {
-                if let child = item as? [String: Any] {
-                    if child["qname"] != nil {
-                        children.append(xmlFromAnyElement(child))
-                    } else {
-                        children.append(xmlFromJSONObject(child))
-                    }
-                }
-            }
-        } else if let childObj = obj[key] as? [String: Any] {
-            if childObj["qname"] != nil {
-                children.append(xmlFromAnyElement(childObj))
-            } else {
-                children.append(xmlFromJSONObject(childObj))
-            }
-        }
-    }
-    // donedata (singular)
-    if let ddArray = obj["donedata"] as? [Any] {
-        for item in ddArray {
+    func appendChildren(_ value: Any?, element childTag: String) throws {
+        guard let value else { return }
+        let items = (value as? [Any]) ?? [value]
+        for item in items {
             if let child = item as? [String: Any] {
                 if child["qname"] != nil {
                     children.append(xmlFromAnyElement(child))
                 } else {
-                    children.append(xmlFromJSONObject(child))
+                    children.append(try xmlFromJSONObject(child, element: childTag))
                 }
-            }
-        }
-    } else if let dd = obj["donedata"] as? [String: Any] {
-        if dd["qname"] != nil {
-            children.append(xmlFromAnyElement(dd))
-        } else {
-            children.append(xmlFromJSONObject(dd))
-        }
-    }
-    // Content (object or array)
-    if let contentObj = obj["content"] as? [String: Any] {
-        if contentObj["qname"] != nil {
-            children.append(xmlFromAnyElement(contentObj))
-        } else {
-            children.append(xmlFromJSONObject(contentObj))
-        }
-    } else if let content = obj["content"] as? [Any] {
-        for item in content {
-            if let child = item as? [String: Any] {
-                if child["qname"] != nil {
-                    children.append(xmlFromAnyElement(child))
-                } else {
-                    children.append(xmlFromJSONObject(child))
-                }
-            } else if let s = item as? String {
-                children.append(escapeXML(s))
+            } else if childTag == "else", item is NSNull {
+                children.append("<else/>")
             }
         }
     }
-    // if/elseif/else
-    if let ifArr = obj["if_value"] as? [Any] {
-        for item in ifArr {
-            if let child = item as? [String: Any] {
-                if child["qname"] != nil {
-                    children.append(xmlFromAnyElement(child))
-                } else {
-                    children.append(xmlFromJSONObject(child))
-                }
-            }
-        }
-    } else if let ifObj = obj["if_value"] as? [String: Any] {
-        if ifObj["qname"] != nil {
-            children.append(xmlFromAnyElement(ifObj))
-        } else {
-            children.append(xmlFromJSONObject(ifObj))
-        }
+    for childTag in STRUCTURAL_FIELDS_ARR {
+        let key = childTag == "raise" ? "raise_value" : childTag
+        try appendChildren(obj[key], element: childTag)
     }
-    if let elseifArr = obj["elseif"] as? [Any] {
-        for item in elseifArr {
-            if let child = item as? [String: Any] {
-                if child["qname"] != nil {
-                    children.append(xmlFromAnyElement(child))
-                } else {
-                    children.append(xmlFromJSONObject(child))
-                }
+    try appendChildren(obj["donedata"], element: "donedata")
+    if let payload = obj["content"] {
+        let items = (payload as? [Any]) ?? [payload]
+        for item in items {
+            if let text = item as? String {
+                children.append(escapeXML(text))
+            } else if let child = item as? [String: Any] {
+                let inferred = ["send", "invoke", "donedata"].contains(tag) ? "content" : "scxml"
+                try appendChildren(child, element: child["tag"] as? String ?? inferred)
             }
         }
     }
-    if obj.keys.contains("else_value") {
-        if let elseObj = obj["else_value"] as? [String: Any] {
-            if elseObj["qname"] != nil {
-                children.append(xmlFromAnyElement(elseObj))
-            } else {
-                children.append(xmlFromJSONObject(elseObj))
-            }
-        } else {
-            children.append("<else/>")
-        }
-    }
-    // finalize
-    if let fin = obj["finalize"] as? [String: Any] {
-        children.append(xmlFromJSONObject(fin))
-    }
+    try appendChildren(obj["if_value"], element: "if")
+    try appendChildren(obj["elseif"], element: "elseif")
+    try appendChildren(obj["else_value"], element: "else")
+    try appendChildren(obj["finalize"], element: "finalize")
     // Emit element
     var xml = "<\(tag)"
     for (k, v) in attrs { xml += " \(k)=\"\(escapeXML(v))\"" }
